@@ -219,7 +219,7 @@ builtin unalias -m '[^+]*'
       fi
       choices[1]=()
 
-      choices=("${(@)${(@)choices%$nul*}#*$nul}")
+      choices=("${(@)${(@)choices#*$nul}%%$nul*}")
 
       unset CTXT
       ;;

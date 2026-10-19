@@ -24,7 +24,7 @@ ftb_preview_init=${ftb_preview_init//__FTB_WORDS_DUMP__/$(typeset -p words)}
 ftb_preview_init+=$'\n'
 
 local default_binds=tab:down,btab:up,change:top,ctrl-space:toggle,bspace:backward-delete-char/eof,ctrl-h:backward-delete-char/eof
-local fzf_command fzf_flags fzf_preview debug_command tmp switch_group active_group_style fzf_pad fzf_min_height binds
+local fzf_command fzf_flags fzf_preview debug_command tmp switch_group switch_sort sort_recent active_group_style fzf_pad fzf_min_height binds
 local ret=0
 
 -ftb-zstyle -s fzf-command fzf_command || fzf_command=fzf
@@ -33,6 +33,8 @@ local ret=0
 -ftb-zstyle -a fzf-flags fzf_flags
 -ftb-zstyle -s fzf-preview fzf_preview
 -ftb-zstyle -a switch-group switch_group || switch_group=(F1 F2)
+-ftb-zstyle -s switch-sort switch_sort || switch_sort=ctrl-r
+-ftb-zstyle -b sort-recent sort_recent || sort_recent=no
 -ftb-zstyle -s fzf-pad fzf_pad || fzf_pad=2
 -ftb-zstyle -s fzf-min-height fzf_min_height || fzf_min_height=0
 -ftb-zstyle -b use-fzf-default-opts use_fzf_default_opts || use_fzf_default_opts="no"
@@ -73,6 +75,15 @@ fi
 
 command cat > $tmp_dir/completions.$$
 
+# start in the recent view, as if switch-sort was already pressed
+local input=$tmp_dir/completions.$$
+local -a sort_flags
+if [[ $sort_recent == yes ]]; then
+  input=$tmp_dir/recent.$$
+  ${(z)reload_command} sort > $input
+  sort_flags=(--no-sort)
+fi
+
 local fzf_default_opts=''
 if [[ "$use_fzf_default_opts" == "yes" ]]; then
   fzf_default_opts=$FZF_DEFAULT_OPTS
@@ -82,6 +93,7 @@ FZF_DEFAULT_OPTS=$fzf_default_opts SHELL=$ZSH_NAME ${(z)fzf_command} \
   --ansi \
   --bind=$binds \
   --bind="${switch_group[1]}:reload($reload_command -1),${switch_group[2]}:reload($reload_command 1)" \
+  --bind="${switch_sort}:reload($reload_command sort)+toggle-sort" \
   --cycle \
   --delimiter='\x00' \
   --expect=$continuous_trigger,$print_query,$accept_line \
@@ -94,7 +106,7 @@ FZF_DEFAULT_OPTS=$fzf_default_opts SHELL=$ZSH_NAME ${(z)fzf_command} \
   --query=$_ftb_query \
   --tiebreak=begin \
   ${fzf_preview:+--preview=${ftb_preview_init}$fzf_preview} \
-  $fzf_flags < $tmp_dir/completions.$$ || ret=$?
+  $sort_flags $fzf_flags < $input || ret=$?
 
 if (( ! use_tmux_popup )); then
   echoti civis >/dev/tty 2>/dev/null

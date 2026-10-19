@@ -4,7 +4,7 @@ local -a _ftb_groups=("${(@f)mapfile[__FTB_GROUPS__]}")
 local bs=$'\2'
 
 # get description
-export desc=${${"$(<'{f}')"%$'\0'*}#*$'\0'}
+export desc=${${"$(<'{f}')"#*$'\0'}%%$'\0'*}
 # get ctxt for current completion
 local -A ctxt=("${(@0)${_ftb_compcap[(r)${(b)desc}$bs*]#*$bs}}")
 # get group

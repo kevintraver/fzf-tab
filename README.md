@@ -89,6 +89,8 @@ Available keybindings:
 
 - <kbd>F1</kbd>/<kbd>F2</kbd>: switch between groups, can be configured by `switch-group` tag
 
+- <kbd>Ctrl</kbd>+<kbd>R</kbd>: toggle sorting files by most recently modified, with relative times, can be configured by `switch-sort` tag. Set `sort-recent` to `yes` to start in this view
+
 - <kbd>/</kbd>: trigger continuous completion (useful when completing a deep path), can be configured by `continuous-trigger` tag
 
 Available commands:
